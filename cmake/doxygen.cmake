@@ -1,3 +1,11 @@
+# Copyright (C) 2013  Dmitriy Vilkov <dav.daemon@gmail.com>
+#
+# Distributed under the OSI-approved BSD License (the "License");
+# see accompanying file LICENSE for details.
+#
+# This software is distributed WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
 
 # Main doc target
 macro (add_project_documentation_main_target)

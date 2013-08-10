@@ -32,8 +32,16 @@ macro (generate_include_file TARGET FILE_NAME_DST FILE_NAME_SRC)
     endif ()
 endmacro ()
 
-# platform/platform.h                         include/platform.h
-# workspace/include/platform/platform.h       workspace/platform/include/platform.h
-#include ../../
 
-
+macro (configure_include_file TARGET FILE_NAME_DST FILE_NAME_SRC)
+    if (${FILE_NAME_SRC} MATCHES "^[^/].*[^/]$")
+        if (${FILE_NAME_DST} MATCHES "^[^/].*[^/]$")
+            configure_file (${PROJECT_SOURCE_DIR}/${FILE_NAME_SRC} ${CMAKE_SOURCE_DIR}/include/${FILE_NAME_DST} @ONLY)
+            add_dependencies (${TARGET} ${CMAKE_SOURCE_DIR}/include/${FILE_NAME_DST})
+        else ()
+            message (FATAL_ERROR "Invalid format of target header file path!")
+        endif ()
+    else ()
+        message (FATAL_ERROR "Invalid format of source header file path!")
+    endif ()
+endmacro ()
