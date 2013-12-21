@@ -345,8 +345,12 @@
 
 #if PLATFORM_COMPILER(GCC)
 #define WARN_UNUSED_RETURN __attribute__ ((warn_unused_result))
+#define WARN_UNUSED_RETURN_OFF GCC_WARNING_OFF(unused-result)
+#define WARN_UNUSED_RETURN_ON GCC_WARNING_ON(unused-result)
 #else
 #define WARN_UNUSED_RETURN
+#define WARN_UNUSED_RETURN_OFF
+#define WARN_UNUSED_RETURN_ON
 #endif
 
 
