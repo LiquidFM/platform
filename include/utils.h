@@ -35,12 +35,12 @@
 
 #define PLATFORM_MAKE_STACK_ONLY                                      \
 private:                                                              \
-	void *operator new(std::size_t) throw (std::bad_alloc);       	  \
-	void *operator new[](std::size_t) throw (std::bad_alloc);         \
-	void *operator new(std::size_t, const std::nothrow_t &) throw();  \
-	void *operator new[](std::size_t, const std::nothrow_t&) throw(); \
-	inline void *operator new(std::size_t, void* __p) throw();        \
-	inline void *operator new[](std::size_t, void* __p) throw();
+    void *operator new(std::size_t) throw (std::bad_alloc);             \
+    void *operator new[](std::size_t) throw (std::bad_alloc);         \
+    void *operator new(std::size_t, const std::nothrow_t &) throw();  \
+    void *operator new[](std::size_t, const std::nothrow_t&) throw(); \
+    inline void *operator new(std::size_t, void* __p) throw();        \
+    inline void *operator new[](std::size_t, void* __p) throw();
 
 
 #if PLATFORM_COMPILER(GCC)
@@ -74,6 +74,10 @@ private:                                                              \
 #define PLATFORM_MAKE_QWORD(hi, lo) static_cast<uint64_t>((static_cast<uint64_t>(hi) << (CHAR_BIT * 4)) | static_cast<uint64_t>(lo))
 
 
+#define PLATFORM_ALIGN(SIZE, ALIGNMENT) \
+    ((SIZE + ALIGNMENT - 1) &~ (ALIGNMENT - 1))
+
+
 // printf macros for size_t, in the style of inttypes.h
 #if PLATFORM_CPU(X86_64)
 #define __PRIS_PREFIX "z"
@@ -86,6 +90,11 @@ private:                                                              \
 // size_t size = records.size();
 // printf("%"PRIuS"\n", size);
 
+#if PLATFORM_OS(LINUX)
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+#else
+
 #define PRIdS __PRIS_PREFIX "d"
 #define PRIxS __PRIS_PREFIX "x"
 #define PRIuS __PRIS_PREFIX "u"
@@ -93,17 +102,19 @@ private:                                                              \
 #define PRIoS __PRIS_PREFIX "o"
 
 #if PLATFORM_CPU(X86)
-	#define PRId64 __PRIS_PREFIX "lld"
-	#define PRIx64 __PRIS_PREFIX "llx"
-	#define PRIu64 __PRIS_PREFIX "llu"
-	#define PRIX64 __PRIS_PREFIX "llX"
-	#define PRIo64 __PRIS_PREFIX "llo"
+    #define PRId64 __PRIS_PREFIX "lld"
+    #define PRIx64 __PRIS_PREFIX "llx"
+    #define PRIu64 __PRIS_PREFIX "llu"
+    #define PRIX64 __PRIS_PREFIX "llX"
+    #define PRIo64 __PRIS_PREFIX "llo"
 #elif PLATFORM_CPU(X86_64)
-	#define PRId64 __PRIS_PREFIX "ld"
-	#define PRIx64 __PRIS_PREFIX "lx"
-	#define PRIu64 __PRIS_PREFIX "lu"
-	#define PRIX64 __PRIS_PREFIX "lX"
-	#define PRIo64 __PRIS_PREFIX "lo"
+    #define PRId64 __PRIS_PREFIX "ld"
+    #define PRIx64 __PRIS_PREFIX "lx"
+    #define PRIu64 __PRIS_PREFIX "lu"
+    #define PRIX64 __PRIS_PREFIX "lX"
+    #define PRIo64 __PRIS_PREFIX "lo"
+#endif
+
 #endif
 
 #endif /* UTILS_H_140420131006 */
