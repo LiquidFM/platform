@@ -117,4 +117,17 @@ private:                                                              \
 
 #endif
 
+
+#if PLATFORM_COMPILER(GCC)
+    #define PLATFORM_MAKE_PRIVATE __attribute__((__visibility__("hidden")))
+    #define PLATFORM_MAKE_PUBLIC __attribute__((__visibility__("default")))
+#elif PLATFORM_COMPILER(MSVC)
+    #define PLATFORM_MAKE_PRIVATE
+    #if PLATFORM_BUILDING_MODULE
+        #define PLATFORM_MAKE_PUBLIC __declspec(dllexport)
+    #else
+        #define PLATFORM_MAKE_PUBLIC __declspec(dllimport)
+    #endif
+#endif
+
 #endif /* UTILS_H_140420131006 */
