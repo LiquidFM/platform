@@ -30,7 +30,7 @@
 #define PLATFORM_H_140420131006
 
 /* Include compiler specific macros */
-#include "compiler.h"
+#include <platform/compiler.h>
 
 
 /* ==== Platform adaptation macros: these describe properties of the target environment. ==== */

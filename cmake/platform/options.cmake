@@ -7,6 +7,7 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the License for more information.
 
+
 set (_PLATFORM_AVAILABLE_OPTIONS "")
 
 macro (platform_option_define _name _description _initialvalue)
@@ -22,30 +23,30 @@ endmacro ()
 macro (platform_options_begin ...)
     foreach (_file_name ${ARGV})
         file (STRINGS ${_file_name} _OPTIONS_LIST)
-    
+
         foreach (_option ${_OPTIONS_LIST})
             string (REGEX MATCH "^([A-Za-z]+[^ \t]*)[ \t]+\"(.*)\"[ \t]+([01])$" _regex_matched ${_option})
-        
+
             if (_regex_matched)
                 PLATFORM_OPTION_DEFINE (${CMAKE_MATCH_1} ${CMAKE_MATCH_2} ${CMAKE_MATCH_3})
             else ()
                 string (REGEX MATCH "^#" _regex_matched ${_option})
-                
+
                 if (NOT _regex_matched)
                     message (FATAL_ERROR "Invalid declaration of platform option \"${_option}\".")
                 endif ()
             endif ()
-        
+
         endforeach ()
     endforeach ()
 endmacro ()
 
 macro (platform_options_end)
     list (REMOVE_DUPLICATES _PLATFORM_AVAILABLE_OPTIONS)
-    
+
     foreach (_name ${_PLATFORM_AVAILABLE_OPTIONS})
         option (${_name} "${_PLATFORM_AVAILABLE_OPTIONS_DESCRIPTION_${_name}}" ${_PLATFORM_AVAILABLE_OPTIONS_INITALVALUE_${_name}})
-        
+
         if (${_PLATFORM_AVAILABLE_OPTIONS_INITALVALUE_${_name}})
             add_definitions (-DPLATFORM_${_name}=1)
         else ()
@@ -77,7 +78,7 @@ macro (platform_options_end)
         else ()
             set (_MESSAGE "${_MESSAGE} OFF")
         endif ()
-            
+
         message (STATUS "${_MESSAGE}")
     endforeach ()
 endmacro ()

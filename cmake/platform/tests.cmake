@@ -1,4 +1,4 @@
-# Copyright (C) 2013  Dmitriy Vilkov <dav.daemon@gmail.com>
+# Copyright (C) 2012-2013  Dmitriy Vilkov <dav.daemon@gmail.com>
 #
 # Distributed under the OSI-approved BSD License (the "License");
 # see accompanying file LICENSE for details.
@@ -8,12 +8,12 @@
 
 
 # Main tests target
-macro (add_project_tests_main_target)
+function (add_project_tests_main_target)
     find_program (LCOV_EXECUTABLE lcov)
     find_program (GENHTML_EXECUTABLE genhtml)
     file (MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
-    include_directories (${CMAKE_BINARY_DIR}/tests)
-    
+    include_directories (${CMAKE_BINARY_DIR}/tests ${CMAKE_CURRENT_SOURCE_DIR}/gtest/include)
+
     set (SUPPRESS_GTEST_WARNINGS "${SUPPRESS_GTEST_WARNINGS}\n#define GTEST_OS_SYMBIAN 0")
     set (SUPPRESS_GTEST_WARNINGS "${SUPPRESS_GTEST_WARNINGS}\n#define GTEST_OS_LINUX 0")
     set (SUPPRESS_GTEST_WARNINGS "${SUPPRESS_GTEST_WARNINGS}\n#define GTEST_OS_LINUX_ANDROID 0")
@@ -33,23 +33,35 @@ macro (add_project_tests_main_target)
     set (SUPPRESS_GTEST_WARNINGS "${SUPPRESS_GTEST_WARNINGS}\n#define GTEST_DONT_DEFINE_ASSERT_GE 0")
     set (SUPPRESS_GTEST_WARNINGS "${SUPPRESS_GTEST_WARNINGS}\n#define GTEST_DONT_DEFINE_ASSERT_GT 0")
     set (SUPPRESS_GTEST_WARNINGS "${SUPPRESS_GTEST_WARNINGS}\n#define GTEST_DONT_DEFINE_TEST 0")
-    file (WRITE ${CMAKE_BINARY_DIR}/tests/tests.h "${SUPPRESS_GTEST_WARNINGS}\n\n#include <gtest/gtest.h>\n")
-    
+    file (WRITE ${CMAKE_BINARY_DIR}/tests/tests.h "${SUPPRESS_GTEST_WARNINGS}\n\n#include <gtest.h>\n")
+
+    add_custom_target (int_tests)
     add_custom_target (tests DEPENDS ${CMAKE_BINARY_DIR}/tests/tests.h)
     add_custom_target (coverage DEPENDS tests)
-endmacro ()
+endfunction ()
 
 
-macro (add_tests NAME SOURCES TESTS_SOURCES DEPENDENCIES)
+function (add_tests NAME SOURCES)
+if (NOT CMAKE_CROSSCOMPILING)
     set (COVERAGE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/doc/${PROJECT_NAME}/coverage)
     file (MAKE_DIRECTORY ${COVERAGE_OUTPUT_DIRECTORY})
     file (MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests)
     file (WRITE ${CMAKE_CURRENT_BINARY_DIR}/tests/tests.cpp "#include <tests.h>\n\nint main(int argc, char **argv)\n{\n\t::testing::InitGoogleTest(&argc, argv);\n\treturn RUN_ALL_TESTS();\n}\n")
 
-    add_executable (${NAME}_tests ${CMAKE_CURRENT_BINARY_DIR}/tests/tests.cpp ${${SOURCES}} ${${TESTS_SOURCES}})
+    exclude_files (".*/main.cpp$" ${SOURCES})
+    add_executable (${NAME}_tests ${CMAKE_CURRENT_BINARY_DIR}/tests/tests.cpp ${${SOURCES}})
     set_target_cxx_flags (${NAME}_tests YES YES YES NO YES NO YES NO)
-    target_link_libraries (${NAME}_tests gtest ${${DEPENDENCIES}})
-    
+
+    get_target_property (TARGET_TYPE ${NAME} TYPE)
+    if (TARGET_TYPE MATCHES ".+_LIBRARY$")
+        set (LIBS ${NAME})
+    else ()
+        get_target_property (LIBS ${NAME} LINK_LIBRARIES)
+        add_dependencies (${NAME}_tests ${NAME})
+    endif ()
+
+    target_link_libraries (${NAME}_tests gtest ${LIBS})
+
     add_custom_command (OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${NAME}_tests_base.info
                         COMMAND ${LCOV_EXECUTABLE} -q -c -i -d . -o ${NAME}_tests_base.info
                         DEPENDS ${NAME}_tests
@@ -64,12 +76,12 @@ macro (add_tests NAME SOURCES TESTS_SOURCES DEPENDENCIES)
                         COMMAND ${LCOV_EXECUTABLE} -q -c -d . -o ${NAME}_tests.info
                         DEPENDS ${NAME}_tests_perform
                         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-    
+
     add_custom_command (OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${NAME}_tests_total.info
                         COMMAND ${LCOV_EXECUTABLE} -q -a ${CMAKE_CURRENT_BINARY_DIR}/${NAME}_tests_base.info -a ${CMAKE_CURRENT_BINARY_DIR}/${NAME}_tests.info -o ${NAME}_tests_total.info
                         DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${NAME}_tests.info
                         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-    
+
     add_custom_command (OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${NAME}_tests_total_clean.info
                         COMMAND ${LCOV_EXECUTABLE} -q -e ${CMAKE_CURRENT_BINARY_DIR}/${NAME}_tests_total.info "*${CMAKE_CURRENT_SOURCE_DIR}*" -o ${NAME}_tests_total_clean.info
                         DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${NAME}_tests_total.info
@@ -82,4 +94,11 @@ macro (add_tests NAME SOURCES TESTS_SOURCES DEPENDENCIES)
 
     add_dependencies (tests ${NAME}_tests)
     add_dependencies (coverage ${NAME}_tests_coverage)
-endmacro ()
+endif ()
+endfunction ()
+
+function (add_int_test NAME SOURCES DEPENDENCIES)
+    add_executable (${NAME} ${${SOURCES}})
+    target_link_libraries (${NAME} ${${DEPENDENCIES}})
+    add_dependencies (int_tests ${NAME})
+endfunction ()

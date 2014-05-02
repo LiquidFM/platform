@@ -15,22 +15,22 @@
 #    BUILD_TYPE_IS_RELEASE
 #    BUILD_TYPE_WITH_DEBUG_INFO
 #    BUILD_TYPE_MIN_SIZE
-#    
+#
 
 
 if (DEFINED CMAKE_BUILD_TYPE AND NOT CMAKE_BUILD_TYPE STREQUAL "")
     string (TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
-    
+
     if (BUILD_TYPE STREQUAL "DEBUG")
-    
+
         set (CMAKE_BUILD_TYPE "Debug")
         set (BUILD_TYPE_IS_DEBUG YES)
-        
+
     elseif (BUILD_TYPE STREQUAL "RELEASE")
-    
+
         set (CMAKE_BUILD_TYPE "Release")
         set (BUILD_TYPE_IS_RELEASE YES)
-        
+
     elseif (BUILD_TYPE STREQUAL "RELWITHDEBINFO")
 
         set (CMAKE_BUILD_TYPE "RelWithDebInfo")
@@ -42,11 +42,11 @@ if (DEFINED CMAKE_BUILD_TYPE AND NOT CMAKE_BUILD_TYPE STREQUAL "")
         set (CMAKE_BUILD_TYPE "MinSizeRel")
         set (BUILD_TYPE_IS_RELEASE YES)
         set (BUILD_TYPE_MIN_SIZE YES)
-        
+
     else ()
-    
+
         message (FATAL_ERROR "Unknown CMAKE_BUILD_TYPE value (\"${CMAKE_BUILD_TYPE}\")!")
-    
+
     endif ()
 else ()
 
@@ -62,7 +62,7 @@ endif ()
 #        variables will be set.
 #
 function (set_compiler_flags)
-    
+
     if (DEFINED ARGV1)
         if (BUILD_TYPE_IS_NOT_SET)
             set (CMAKE_${ARGV1}_FLAGS ${ARGV0} PARENT_SCOPE)
@@ -97,5 +97,5 @@ function (set_compiler_flags)
             endif ()
         endif ()
     endif ()
-    
+
 endfunction ()

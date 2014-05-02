@@ -1,4 +1,4 @@
-# Copyright (C) 2013  Dmitriy Vilkov <dav.daemon@gmail.com>
+# Copyright (C) 2012-2013  Dmitriy Vilkov <dav.daemon@gmail.com>
 #
 # Distributed under the OSI-approved BSD License (the "License");
 # see accompanying file LICENSE for details.
@@ -14,7 +14,7 @@ macro (add_project_documentation_main_target)
 endmacro ()
 
 
-macro (add_documentation_ex NAME VERSION_MAJOR VERSION_MINOR VERSION_RELEASE VERSION_BUILD BRIEF_DESCRIPTION)
+function (add_documentation_ex NAME VERSION_MAJOR VERSION_MINOR VERSION_RELEASE VERSION_BUILD BRIEF_DESCRIPTION)
     set (DOXYGEN_INPUT ${CMAKE_CURRENT_SOURCE_DIR})
     set (DOXYGEN_PROJECT_NAME   ${NAME})
     set (DOXYGEN_PROJECT_NUMBER ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_RELEASE}.${VERSION_BUILD})
@@ -23,7 +23,10 @@ macro (add_documentation_ex NAME VERSION_MAJOR VERSION_MINOR VERSION_RELEASE VER
     set (DOXYGEN_HTML_EXTRA_FILES)
     file (MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIRECTORY})
     find_file (DOXYGEN_CONF_IN "doxygen.conf.in"
-               PATHS ${PROJECT_SOURCE_DIR}/../platform/cmake ${PROJECT_SOURCE_DIR}/../../cmake/platform
+               PATHS
+                   ${PROJECT_SOURCE_DIR}/../platform/cmake/platform
+                   ${PROJECT_SOURCE_DIR}/../../platform/cmake/platform
+                   ${CMAKE_ROOT}/Modules/platform
                NO_DEFAULT_PATH
                NO_CMAKE_ENVIRONMENT_PATH
                NO_CMAKE_PATH
@@ -40,7 +43,7 @@ macro (add_documentation_ex NAME VERSION_MAJOR VERSION_MINOR VERSION_RELEASE VER
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
     add_dependencies (doc doc_${PROJECT_NAME})
-endmacro ()
+endfunction ()
 
 
 macro (add_documentation NAME VERSION BRIEF_DESCRIPTION)
@@ -76,7 +79,7 @@ macro (add_documentation_with_extra_files_ex NAME VERSION_MAJOR VERSION_MINOR VE
     endforeach ()
     file (MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIRECTORY})
     find_file (DOXYGEN_CONF_IN "doxygen.conf.in"
-               PATHS ${PROJECT_SOURCE_DIR}/../platform/cmake ${PROJECT_SOURCE_DIR}/../../cmake/platform
+               PATHS ${PROJECT_SOURCE_DIR}/../cmake/platform ${PROJECT_SOURCE_DIR}/../../cmake/platform
                NO_DEFAULT_PATH
                NO_CMAKE_ENVIRONMENT_PATH
                NO_CMAKE_PATH

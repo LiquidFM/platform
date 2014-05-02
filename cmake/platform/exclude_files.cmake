@@ -9,6 +9,7 @@
 
 function (exclude_files MASK THIS_FILES)
     # "THIS_FILES" contains name of the actual variable passed into here.
+    set (_FILES)
 
     foreach (_file ${${THIS_FILES}})
         if (NOT ${_file} MATCHES ${MASK})
@@ -16,5 +17,5 @@ function (exclude_files MASK THIS_FILES)
         endif ()
     endforeach ()
     set (${THIS_FILES} ${_FILES} PARENT_SCOPE)
-    
+
 endfunction (exclude_files)

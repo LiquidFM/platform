@@ -7,31 +7,44 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the License for more information.
 
+
 include_directories (${CMAKE_BINARY_DIR})
 
-macro (build_version_file_ex NAME VERSION_MAJOR VERSION_MINOR VERSION_RELEASE VERSION_BUILD)
+function (build_version_file_ex NAME VERSION_MAJOR VERSION_MINOR VERSION_RELEASE VERSION_BUILD)
     string (TOUPPER ${NAME} UPPER_NAME)
     string (TOLOWER ${NAME} LOWER_NAME)
     set (VERSION_FILE "${VERSION_FILE}#ifndef ${UPPER_NAME}_VERSION_H_")
     set (VERSION_FILE "${VERSION_FILE}\n#define ${UPPER_NAME}_VERSION_H_\n")
+    set (VERSION_FILE "${VERSION_FILE}\n#define ${UPPER_NAME}_VERSION_ARCH    \"@VERSION_ARCH@\"")
     set (VERSION_FILE "${VERSION_FILE}\n#define ${UPPER_NAME}_VERSION_MAJOR   @VERSION_MAJOR@")
     set (VERSION_FILE "${VERSION_FILE}\n#define ${UPPER_NAME}_VERSION_MINOR   @VERSION_MINOR@")
     set (VERSION_FILE "${VERSION_FILE}\n#define ${UPPER_NAME}_VERSION_RELEASE @VERSION_RELEASE@")
     set (VERSION_FILE "${VERSION_FILE}\n#define ${UPPER_NAME}_VERSION_BUILD   @VERSION_BUILD@")
     set (VERSION_FILE "${VERSION_FILE}\n#define ${UPPER_NAME}_VERSION_STRING  \"@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_RELEASE@.@VERSION_BUILD@\"")
+
+    get_target_property(target_type ${NAME} TYPE)
+    if (${target_type} STREQUAL "EXECUTABLE")
+        set (VERSION_FILE "${VERSION_FILE}\n\nclass Executable;")
+        set (VERSION_FILE "${VERSION_FILE}\nconst Executable *${LOWER_NAME}_module();")
+    else ()
+        set (VERSION_FILE "${VERSION_FILE}\n\nclass Library;")
+        set (VERSION_FILE "${VERSION_FILE}\nconst Library *${LOWER_NAME}_module();")
+    endif ()
+
     set (VERSION_FILE "${VERSION_FILE}\n\n#endif /* ${UPPER_NAME}_VERSION_H_ */")
     file (WRITE ${CMAKE_CURRENT_BINARY_DIR}/${LOWER_NAME}_version.h.in "${VERSION_FILE}\n")
-    
+
     set (VERSION_MAJOR ${VERSION_MAJOR})
     set (VERSION_MINOR ${VERSION_MINOR})
     set (VERSION_RELEASE ${VERSION_RELEASE})
     set (VERSION_BUILD ${VERSION_BUILD})
-    
+    set (VERSION_ARCH ${CMAKE_HOST_SYSTEM_PROCESSOR})
+
     configure_file (${CMAKE_CURRENT_BINARY_DIR}/${LOWER_NAME}_version.h.in ${CMAKE_BINARY_DIR}/${LOWER_NAME}_version.h @ONLY)
     add_dependencies (${NAME} ${CMAKE_BINARY_DIR}/${LOWER_NAME}_version.h)
-endmacro ()
+endfunction ()
 
-macro (build_version_file NAME VERSION)
+function (build_version_file NAME VERSION)
     if (${VERSION} MATCHES "^([0-9]+).([0-9]+).([0-9]+)$")
         string (REGEX REPLACE "^([0-9]+).[0-9]+.[0-9]+$" "\\1" VERSION_MAJOR "${VERSION}")
         string (REGEX REPLACE "^[0-9]+.([0-9]+).[0-9]+$" "\\1" VERSION_MINOR "${VERSION}")
@@ -49,4 +62,4 @@ macro (build_version_file NAME VERSION)
     else ()
         build_version_file_ex (${NAME} ${VERSION_MAJOR} ${VERSION_MINOR} ${VERSION_RELEASE} 0)
     endif ()
-endmacro ()
+endfunction ()

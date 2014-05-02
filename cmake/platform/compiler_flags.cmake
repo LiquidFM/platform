@@ -95,25 +95,29 @@ macro (set_compiler_and_linker_flags)
     elseif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUC)
         # Useful link: "http://gcc.gnu.org/onlinedocs/gcc/Invoking-GCC.html".
 
+        # Common flags
+        set (COMMON_FLAGS "-Wall -Wundef -Wformat -Wno-shadow -Wcast-qual -Wcast-align -Wpointer-arith -Wconversion")
+
         if (WIN32)
             # We're require at least Windows 2000 (MinGW needs at least 0x0501 version; http://msdn.microsoft.com/en-us/library/Aa383745).
+            set (C_BASE_FLAGS "${C_BASE_FLAGS} -D_WIN32_WINNT=0x0501 -DWINVER=0x0501")
             set (CXX_BASE_FLAGS "${CXX_BASE_FLAGS} -D_WIN32_WINNT=0x0501 -DWINVER=0x0501")
         endif()
         # Turn on WARNINGS.
-        set (C_BASE_FLAGS   "${C_BASE_FLAGS}   -Wall -Wundef -Wcast-align -Wpointer-arith -Wformat")
+        set (C_BASE_FLAGS   "${C_BASE_FLAGS} ${COMMON_FLAGS} -Wstrict-prototypes -Wmissing-prototypes -Wtraditional")
+        set (CXX_BASE_FLAGS "${CXX_BASE_FLAGS} ${COMMON_FLAGS}")
         # Turn off WARNINGS.
-        set (C_BASE_FLAGS   "${C_BASE_FLAGS}   -Wno-unused-parameter -Wno-parentheses -Wno-shadow -Wno-ignored-qualifiers")
-        set (CXX_BASE_FLAGS "${CXX_BASE_FLAGS} -Wno-overloaded-virtual")
+        set (C_BASE_FLAGS   "${C_BASE_FLAGS}   -Wno-unused-parameter -Wno-parentheses -Wno-ignored-qualifiers")
+        set (CXX_BASE_FLAGS "${CXX_BASE_FLAGS} -Wno-unused-parameter -Wno-parentheses -Wno-ignored-qualifiers -Wno-overloaded-virtual")
         # WARNINGS to ERRORS.
         set (C_BASE_FLAGS   "${C_BASE_FLAGS}   -Werror=return-type")
-        set (CXX_BASE_FLAGS "${CXX_BASE_FLAGS} -Werror=non-virtual-dtor")
+        set (CXX_BASE_FLAGS "${CXX_BASE_FLAGS} -Werror=return-type -Werror=non-virtual-dtor")
         # Turn on CODE GEN.
         set (C_BASE_FLAGS   "${C_BASE_FLAGS}   -fvisibility=hidden -fvisibility-inlines-hidden")
+        set (CXX_BASE_FLAGS "${CXX_BASE_FLAGS} -fvisibility=hidden -fvisibility-inlines-hidden")
         # Turn off CODE GEN.
         set (C_BASE_FLAGS   "${C_BASE_FLAGS}   -fno-common -fno-threadsafe-statics")
-        set (CXX_BASE_FLAGS "${CXX_BASE_FLAGS} -fno-check-new")
-        # Prepend C_BASE_FLAGS to CXX_BASE_FLAGS
-        set (CXX_BASE_FLAGS "${C_BASE_FLAGS} ${CXX_BASE_FLAGS}")
+        set (CXX_BASE_FLAGS "${CXX_BASE_FLAGS} -fno-common -fno-threadsafe-statics -fno-check-new")
         # Exceptions.
         set (CXX_EXCEPTION_FLAGS    "-fexceptions")
         set (CXX_NO_EXCEPTION_FLAGS "-fno-exceptions")
@@ -156,7 +160,7 @@ macro (set_compiler_and_linker_flags)
         set (CXX_ABI_X32_64_FLAGS "${C_ABI_X32_64_FLAGS}")
 
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "SunPro")
-  
+
         # Base flags.
         set (CXX_BASE_FLAGS "${CMAKE_CXX_FLAGS}")
         # Exceptions. Sun Pro doesn't provide macros to indicate whether exceptions are enabled.

@@ -1,0 +1,18 @@
+1. In order to figure out the default paths used by gcc/g++ as well
+as their priorities you examine the output of the following commands:
+
+For C:
+
+gcc -xc -E -v -
+For C++:
+
+gcc -xc++ -E -v -
+The credit goes to Qt Creator team.
+
+2. Display GCC Predefined Macros
+    OR
+gcc -dM -E - < /dev/null
+    OR
+gcc -dM -E - <<<''
+    OR
+echo | gcc -dM -E -

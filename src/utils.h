@@ -1,9 +1,13 @@
 #ifndef UTILS_H_140420131006
 #define UTILS_H_140420131006
 
-#include <new>
 #include <limits.h>
-#include "platform.h"
+#include <platform/platform.h>
+
+#ifdef __cplusplus
+#include <new>
+#endif /* __cplusplus */
+
 
 #if PLATFORM_OS(WINDOWS)
 
@@ -80,7 +84,7 @@ private:                                                              \
 
 // printf macros for size_t, in the style of inttypes.h
 #if PLATFORM_CPU(X86_64)
-#define __PRIS_PREFIX "z"
+#define __PRIS_PREFIX "l"
 #else
 #define __PRIS_PREFIX
 #endif
