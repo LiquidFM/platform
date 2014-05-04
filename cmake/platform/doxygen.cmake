@@ -24,8 +24,7 @@ function (add_documentation_ex NAME VERSION_MAJOR VERSION_MINOR VERSION_RELEASE 
     file (MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIRECTORY})
     find_file (DOXYGEN_CONF_IN "doxygen.conf.in"
                PATHS
-                   ${PROJECT_SOURCE_DIR}/../platform/cmake/platform
-                   ${PROJECT_SOURCE_DIR}/../../platform/cmake/platform
+                   ${CMAKE_SOURCE_DIR}/platform/cmake/platform
                    ${CMAKE_ROOT}/Modules/platform
                NO_DEFAULT_PATH
                NO_CMAKE_ENVIRONMENT_PATH
@@ -46,7 +45,7 @@ function (add_documentation_ex NAME VERSION_MAJOR VERSION_MINOR VERSION_RELEASE 
 endfunction ()
 
 
-macro (add_documentation NAME VERSION BRIEF_DESCRIPTION)
+function (add_documentation NAME VERSION BRIEF_DESCRIPTION)
     if (${VERSION} MATCHES "^([0-9]+).([0-9]+).([0-9]+)$")
         string (REGEX REPLACE "^([0-9]+).[0-9]+.[0-9]+$" "\\1" VERSION_MAJOR "${VERSION}")
         string (REGEX REPLACE "^[0-9]+.([0-9]+).[0-9]+$" "\\1" VERSION_MINOR "${VERSION}")
@@ -64,10 +63,10 @@ macro (add_documentation NAME VERSION BRIEF_DESCRIPTION)
     else ()
         add_documentation_ex (${NAME} ${VERSION_MAJOR} ${VERSION_MINOR} ${VERSION_RELEASE} 0 ${BRIEF_DESCRIPTION})
     endif ()
-endmacro ()
+endfunction ()
 
 
-macro (add_documentation_with_extra_files_ex NAME VERSION_MAJOR VERSION_MINOR VERSION_RELEASE VERSION_BUILD BRIEF_DESCRIPTION FILES_LIST)
+function (add_documentation_with_extra_files_ex NAME VERSION_MAJOR VERSION_MINOR VERSION_RELEASE VERSION_BUILD BRIEF_DESCRIPTION FILES_LIST)
     set (DOXYGEN_INPUT ${CMAKE_CURRENT_SOURCE_DIR})
     set (DOXYGEN_PROJECT_NAME   ${NAME})
     set (DOXYGEN_PROJECT_NUMBER ${VERSION})
@@ -96,10 +95,10 @@ macro (add_documentation_with_extra_files_ex NAME VERSION_MAJOR VERSION_MINOR VE
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
     add_dependencies (doc doc_${PROJECT_NAME})
-endmacro ()
+endfunction ()
 
 
-macro (add_documentation_with_extra_files NAME VERSION BRIEF_DESCRIPTION FILES_LIST)
+function (add_documentation_with_extra_files NAME VERSION BRIEF_DESCRIPTION FILES_LIST)
     if (${VERSION} MATCHES "^([0-9]+).([0-9]+).([0-9]+)$")
         string (REGEX REPLACE "^([0-9]+).[0-9]+.[0-9]+$" "\\1" VERSION_MAJOR "${VERSION}")
         string (REGEX REPLACE "^[0-9]+.([0-9]+).[0-9]+$" "\\1" VERSION_MINOR "${VERSION}")
@@ -117,4 +116,4 @@ macro (add_documentation_with_extra_files NAME VERSION BRIEF_DESCRIPTION FILES_L
     else ()
         add_documentation_with_extra_files_ex (${NAME} ${VERSION_MAJOR} ${VERSION_MINOR} ${VERSION_RELEASE} 0 ${BRIEF_DESCRIPTION} ${FILES_LIST})
     endif ()
-endmacro ()
+endfunction ()
