@@ -8,6 +8,6 @@
 
 
 macro (add_library_stub NAME)
-    file (WRITE ${CMAKE_CURRENT_BINARY_DIR}/stub.c "int __${NAME}_just_a_stub_for_cmake__() { return 123; }")
+    file (WRITE ${CMAKE_CURRENT_BINARY_DIR}/stub.c "int __${NAME}_just_a_stub_for_cmake__(void);\nint __${NAME}_just_a_stub_for_cmake__(void) { return 123; }")
     add_library (${NAME} STATIC stub.c)
 endmacro ()
