@@ -104,7 +104,7 @@ macro (set_compiler_and_linker_flags)
             set (CXX_BASE_FLAGS "${CXX_BASE_FLAGS} -D_WIN32_WINNT=0x0501 -DWINVER=0x0501")
         endif()
         # Turn on WARNINGS.
-        set (C_BASE_FLAGS   "${C_BASE_FLAGS} ${COMMON_FLAGS} -Wstrict-prototypes -Wmissing-prototypes -Wtraditional")
+        set (C_BASE_FLAGS   "${C_BASE_FLAGS} ${COMMON_FLAGS} -Wstrict-prototypes -Wmissing-prototypes")
         set (CXX_BASE_FLAGS "${CXX_BASE_FLAGS} ${COMMON_FLAGS}")
         # Turn off WARNINGS.
         set (C_BASE_FLAGS   "${C_BASE_FLAGS}   -Wno-unused-parameter -Wno-parentheses -Wno-ignored-qualifiers")
@@ -113,10 +113,10 @@ macro (set_compiler_and_linker_flags)
         set (C_BASE_FLAGS   "${C_BASE_FLAGS}   -Werror=return-type")
         set (CXX_BASE_FLAGS "${CXX_BASE_FLAGS} -Werror=return-type -Werror=non-virtual-dtor")
         # Turn on CODE GEN.
-        set (C_BASE_FLAGS   "${C_BASE_FLAGS}   -fvisibility=hidden -fvisibility-inlines-hidden")
+        set (C_BASE_FLAGS   "${C_BASE_FLAGS}   -fvisibility=hidden")
         set (CXX_BASE_FLAGS "${CXX_BASE_FLAGS} -fvisibility=hidden -fvisibility-inlines-hidden")
         # Turn off CODE GEN.
-        set (C_BASE_FLAGS   "${C_BASE_FLAGS}   -fno-common -fno-threadsafe-statics")
+        set (C_BASE_FLAGS   "${C_BASE_FLAGS}   -fno-common")
         set (CXX_BASE_FLAGS "${CXX_BASE_FLAGS} -fno-common -fno-threadsafe-statics -fno-check-new")
         # Exceptions.
         set (CXX_EXCEPTION_FLAGS    "-fexceptions")
