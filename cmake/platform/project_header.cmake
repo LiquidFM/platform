@@ -38,9 +38,11 @@ function (set_sysroot_and_target)
 endfunction ()
 
 macro (print_system_info)
-    # Fix path delimeters
     if (WIN32)
+        # Fix path delimeters
         file (TO_CMAKE_PATH ${CMAKE_INSTALL_PREFIX} CMAKE_INSTALL_PREFIX)
+        # Require at least Windows 2000 (http://msdn.microsoft.com/en-us/library/Aa383745)
+        add_definitions (-D_WIN32_WINNT=0x0500 -DWINVER=0x0500)
     endif ()
 
     if (CMAKE_CROSSCOMPILING)
