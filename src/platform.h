@@ -193,6 +193,9 @@
 #if defined(__ARMEB__) || (PLATFORM_COMPILER(RVCT) && defined(__BIG_ENDIAN))
 #define PLATFORM_CPU_BIG_ENDIAN 1
 
+#elif defined(__ARMEL__) || (PLATFORM_COMPILER(RVCT) && defined(__LITTLE_ENDIAN))
+#define PLATFORM_CPU_LITTLE_ENDIAN 1
+
 #elif !defined(__ARM_EABI__) \
     && !defined(__EABI__) \
     && !defined(__VFP_FP__) \
