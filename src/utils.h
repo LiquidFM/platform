@@ -111,6 +111,13 @@ private:                                                              \
 #define __PRIS_PREFIX
 #endif
 
+// printf macros for size_t, in the style of inttypes.h
+#if PLATFORM_CPU(X86_64)
+#define __PRIS_PREFIX "l"
+#else
+#define __PRIS_PREFIX
+#endif
+
 #define PRIdS __PRIS_PREFIX "d"
 #define PRIxS __PRIS_PREFIX "x"
 #define PRIuS __PRIS_PREFIX "u"
