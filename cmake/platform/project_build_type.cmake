@@ -13,8 +13,8 @@
 #    BUILD_TYPE_IS_NOT_SET
 #    BUILD_TYPE_IS_DEBUG
 #    BUILD_TYPE_IS_RELEASE
-#    BUILD_TYPE_WITH_DEBUG_INFO
-#    BUILD_TYPE_MIN_SIZE
+#    BUILD_TYPE_IS_RELEASE_WITH_DEBUG_INFO
+#    BUILD_TYPE_IS_RELEASE_MIN_SIZE
 #
 
 
@@ -22,36 +22,24 @@ if (DEFINED CMAKE_BUILD_TYPE AND NOT CMAKE_BUILD_TYPE STREQUAL "")
     string (TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 
     if (BUILD_TYPE STREQUAL "DEBUG")
-
         set (CMAKE_BUILD_TYPE "Debug")
         set (BUILD_TYPE_IS_DEBUG YES)
-
     elseif (BUILD_TYPE STREQUAL "RELEASE")
-
         set (CMAKE_BUILD_TYPE "Release")
         set (BUILD_TYPE_IS_RELEASE YES)
-
     elseif (BUILD_TYPE STREQUAL "RELWITHDEBINFO")
-
         set (CMAKE_BUILD_TYPE "RelWithDebInfo")
         set (BUILD_TYPE_IS_RELEASE YES)
-        set (BUILD_TYPE_WITH_DEBUG_INFO YES)
-
+        set (BUILD_TYPE_IS_RELEASE_WITH_DEBUG_INFO YES)
     elseif (BUILD_TYPE STREQUAL "MINSIZEREL")
-
         set (CMAKE_BUILD_TYPE "MinSizeRel")
         set (BUILD_TYPE_IS_RELEASE YES)
-        set (BUILD_TYPE_MIN_SIZE YES)
-
+        set (BUILD_TYPE_IS_RELEASE_MIN_SIZE YES)
     else ()
-
         message (FATAL_ERROR "Unknown CMAKE_BUILD_TYPE value (\"${CMAKE_BUILD_TYPE}\")!")
-
     endif ()
 else ()
-
     set (BUILD_TYPE_IS_NOT_SET YES)
-
 endif ()
 
 
@@ -69,9 +57,9 @@ function (set_compiler_flags)
         elseif (BUILD_TYPE_IS_DEBUG)
             set (CMAKE_${ARGV1}_FLAGS_DEBUG ${ARGV0} PARENT_SCOPE)
         elseif (BUILD_TYPE_IS_RELEASE)
-            if (BUILD_TYPE_WITH_DEBUG_INFO)
+            if (BUILD_TYPE_IS_RELEASE_WITH_DEBUG_INFO)
                 set (CMAKE_${ARGV1}_FLAGS_RELWITHDEBINFO ${ARGV0} PARENT_SCOPE)
-            elseif (BUILD_TYPE_MIN_SIZE)
+            elseif (BUILD_TYPE_IS_RELEASE_MIN_SIZE)
                 set (CMAKE_${ARGV1}_FLAGS_MINSIZEREL ${ARGV0} PARENT_SCOPE)
             else ()
                 set (CMAKE_${ARGV1}_FLAGS_RELEASE ${ARGV0} PARENT_SCOPE)
@@ -85,10 +73,10 @@ function (set_compiler_flags)
             set (CMAKE_C_FLAGS_DEBUG ${ARGV0} PARENT_SCOPE)
             set (CMAKE_CXX_FLAGS_DEBUG ${ARGV0} PARENT_SCOPE)
         elseif (BUILD_TYPE_IS_RELEASE)
-            if (BUILD_TYPE_WITH_DEBUG_INFO)
+            if (BUILD_TYPE_IS_RELEASE_WITH_DEBUG_INFO)
                 set (CMAKE_C_FLAGS_RELWITHDEBINFO ${ARGV0} PARENT_SCOPE)
                 set (CMAKE_CXX_FLAGS_RELWITHDEBINFO ${ARGV0} PARENT_SCOPE)
-            elseif (BUILD_TYPE_MIN_SIZE)
+            elseif (BUILD_TYPE_IS_RELEASE_MIN_SIZE)
                 set (CMAKE_C_FLAGS_MINSIZEREL ${ARGV0} PARENT_SCOPE)
                 set (CMAKE_CXX_FLAGS_MINSIZEREL ${ARGV0} PARENT_SCOPE)
             else ()

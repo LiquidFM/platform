@@ -32,7 +32,6 @@
 /* Include compiler specific macros */
 #include <platform/compiler.h>
 
-
 /* ==== Platform adaptation macros: these describe properties of the target environment. ==== */
 
 /* PLATFORM_CPU() - the target CPU architecture */
@@ -151,12 +150,14 @@
 #define PLATFORM_CPU_X86 1
 
 #if PLATFORM_COMPILER(GCC)
-#if defined(__BIG_ENDIAN__) \
+#if defined(__BIG_ENDIAN__) || defined(__BIG_ENDIAN) \
 	|| (defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__))
 #define PLATFORM_CPU_BIG_ENDIAN 1
-#elif defined(__LITTLE_ENDIAN__) \
+#elif defined(__LITTLE_ENDIAN__) || defined(__LITTLE_ENDIAN) \
 	|| (defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__))
 #define PLATFORM_CPU_LITTLE_ENDIAN 1
+#else
+#error Unknown endianness of the target system
 #endif
 #elif PLATFORM_COMPILER(MSVC)
 #define PLATFORM_CPU_LITTLE_ENDIAN 1
@@ -170,12 +171,14 @@
 #define PLATFORM_CPU_X86_64 1
 
 #if PLATFORM_COMPILER(GCC)
-#if defined(__BIG_ENDIAN__) \
+#if defined(__BIG_ENDIAN__) || defined(__BIG_ENDIAN) \
 	|| (defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__))
 #define PLATFORM_CPU_BIG_ENDIAN 1
-#elif defined(__LITTLE_ENDIAN__) \
+#elif defined(__LITTLE_ENDIAN__) || defined(__LITTLE_ENDIAN) \
 	|| (defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__))
 #define PLATFORM_CPU_LITTLE_ENDIAN 1
+#else
+#error Unknown endianness of the target system
 #endif
 #elif PLATFORM_COMPILER(MSVC)
 #define PLATFORM_CPU_LITTLE_ENDIAN 1
@@ -192,6 +195,9 @@
 
 #if defined(__ARMEB__) || (PLATFORM_COMPILER(RVCT) && defined(__BIG_ENDIAN))
 #define PLATFORM_CPU_BIG_ENDIAN 1
+
+#elif defined(__ARMEL__) || (PLATFORM_COMPILER(RVCT) && defined(__LITTLE_ENDIAN))
+#define PLATFORM_CPU_LITTLE_ENDIAN 1
 
 #elif !defined(__ARM_EABI__) \
     && !defined(__EABI__) \

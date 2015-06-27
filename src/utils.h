@@ -82,22 +82,34 @@ private:                                                              \
     ((SIZE + ALIGNMENT - 1) &~ (ALIGNMENT - 1))
 
 
+// Use these macros after a % in a printf format string
+// to get correct 32/64 bit behavior, like this:
+// size_t size = records.size();
+// printf("%"PRIuS"\n", size);
+
+#if PLATFORM_OS(UNIX)
+
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
+#ifndef PRIuS
 // printf macros for size_t, in the style of inttypes.h
 #if PLATFORM_CPU(X86_64)
 #define __PRIS_PREFIX "l"
 #else
 #define __PRIS_PREFIX
 #endif
+#define PRIuS __PRIS_PREFIX "u"
+#endif
 
-// Use these macros after a % in a printf format string
-// to get correct 32/64 bit behavior, like this:
-// size_t size = records.size();
-// printf("%"PRIuS"\n", size);
-
-#if PLATFORM_OS(LINUX)
-#define __STDC_FORMAT_MACROS
-#include <inttypes.h>
 #else
+
+// printf macros for size_t, in the style of inttypes.h
+#if PLATFORM_CPU(X86_64)
+#define __PRIS_PREFIX "l"
+#else
+#define __PRIS_PREFIX
+#endif
 
 #define PRIdS __PRIS_PREFIX "d"
 #define PRIxS __PRIS_PREFIX "x"

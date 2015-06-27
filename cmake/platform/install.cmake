@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2013  Dmitriy Vilkov <dav.daemon@gmail.com>
+# Copyright (C) 2012-2015  Dmitriy Vilkov <dav.daemon@gmail.com>
 #
 # Distributed under the OSI-approved BSD License (the "License");
 # see accompanying file COPYING-CMAKE-SCRIPTS for details.
@@ -20,7 +20,9 @@ include_directories (${CMAKE_BINARY_DIR}/_headers_)
 
 function (__setup_global_headers)
     set (_GLOBAL_HEADERS ${CMAKE_BINARY_DIR}/_headers_)
-    set (_PROJECT_GLOBAL_HEADERS ${_GLOBAL_HEADERS}/${PROJECT_NAME})
+
+    string (TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
+    set (_PROJECT_GLOBAL_HEADERS ${_GLOBAL_HEADERS}/${PROJECT_NAME_LOWER})
 
     file (MAKE_DIRECTORY ${_PROJECT_GLOBAL_HEADERS})
 
@@ -29,101 +31,95 @@ function (__setup_global_headers)
 endfunction ()
 
 
-function (__install_header_files_with_prefix NAME PREFIX OUTPUT_FILES ...)
+macro (__process_files_to_install MACROS EXT PREFIX ...)
     set (ARGS ${ARGV})
     if ("${PREFIX}" STREQUAL "")
-    list (REMOVE_AT ARGS 0 1)
+        list (REMOVE_AT ARGS 0 1)
     else ()
         list (REMOVE_AT ARGS 0 1 2)
-        set (PREFIX_ORIG ${PREFIX})
-        set (PREFIX "${PREFIX}/")
+        set (PREFIX_LOC "${PREFIX}/")
     endif ()
 
     foreach (ARG IN LISTS ARGS)
-        if (${ARG} MATCHES "^[\\/].+:[^:]+$")
+        if (${ARG} MATCHES "^.+:[^:]+$")
             string (REGEX REPLACE "^(.+):[^:]+$"       "\\1" HEADER_SRC     "${ARG}")
             string (REGEX REPLACE "^.+:([^:]+)$"       "\\1" HEADER_DST     "${ARG}")
-            string (REGEX REPLACE "^((.+[\\/])*).+$"   "\\1" HEADER_DST_DIR "${PREFIX}${HEADER_DST}")
-        elseif (${ARG} MATCHES "^.+:[^:]+$")
-            string (REGEX REPLACE "^(.+):[^:]+$"       "\\1" HEADER_SRC     "${ARG}")
-            string (REGEX REPLACE "^.+:([^:]+)$"       "\\1" HEADER_DST     "${ARG}")
-            string (REGEX REPLACE "^((.+[\\/])*).+$"   "\\1" HEADER_DST_DIR "${PREFIX}${HEADER_DST}")
-            set (HEADER_SRC "${CMAKE_CURRENT_SOURCE_DIR}/${HEADER_SRC}")
-        elseif (${ARG} MATCHES "^[\\/].+$")
-            set (HEADER_SRC "${ARG}")
+            string (REGEX REPLACE "^((.+[\\/])*).+$"   "\\1" HEADER_DST_DIR "${PREFIX_LOC}${HEADER_DST}")
 
-            if (IS_DIRECTORY ${HEADER_SRC})
-                set (HEADER_DST)
-                set (HEADER_DST_DIR "${PREFIX}")
-            else ()
-                string (REGEX REPLACE "^.*[\\/]([^\\/]+)$" "\\1" HEADER_DST     "${ARG}")
-                string (REGEX REPLACE "^((.+[\\/])*).+$"   "\\1" HEADER_DST_DIR "${PREFIX}${HEADER_DST}")
-            endif ()
-        elseif (${ARG} MATCHES "^.+$")
-            set (HEADER_SRC "${CMAKE_CURRENT_SOURCE_DIR}/${ARG}")
-
-            if (IS_DIRECTORY ${HEADER_SRC})
-                set (HEADER_DST)
-                set (HEADER_DST_DIR "${PREFIX}")
-            else ()
-                string (REGEX REPLACE "^.*[\\/]([^\\/]+)$" "\\1" HEADER_DST     "${ARG}")
-                string (REGEX REPLACE "^((.+[\\/])*).+$"   "\\1" HEADER_DST_DIR "${PREFIX}${HEADER_DST}")
+            if (NOT ${ARG} MATCHES "^[\\/]")
+                set (HEADER_SRC "${CMAKE_CURRENT_SOURCE_DIR}/${HEADER_SRC}")
             endif ()
         else ()
-            message (FATAL_ERROR "Invalid argument: ${ARG}\nShould be '<path to source header file or directory>[:<destination file name or directory>]'")
+            if (${ARG} MATCHES "^[\\/]")
+                set (HEADER_SRC "${ARG}")
+            else ()
+                set (HEADER_SRC "${CMAKE_CURRENT_SOURCE_DIR}/${ARG}")
+            endif ()
+
+            if (IS_DIRECTORY ${HEADER_SRC})
+                set (HEADER_DST)
+                set (HEADER_DST_DIR "${PREFIX_LOC}")
+            else ()
+                string (REGEX REPLACE "^.*[\\/]([^\\/]+)$" "\\1" HEADER_DST     "${ARG}")
+                string (REGEX REPLACE "^((.+[\\/])*).+$"   "\\1" HEADER_DST_DIR "${PREFIX_LOC}${HEADER_DST}")
+            endif ()
         endif ()
 
-        if (IS_DIRECTORY ${HEADER_SRC})
-            set (ARGS_RECURSION)
+        if (NOT EXISTS "${HEADER_SRC}")
+            message (FATAL_ERROR "Invalid argument: ${ARG}\nSource path '${HEADER_SRC}' does not exist!")
+        endif ()
 
-            if (NOT "${HEADER_DST}" STREQUAL "" AND NOT "${HEADER_DST}" MATCHES "^.+[\\/]$")
+        if (IS_DIRECTORY "${HEADER_SRC}")
+            if (NOT "${HEADER_DST}" STREQUAL "" AND NOT "${HEADER_DST}" MATCHES "[\\/]$")
                 message (FATAL_ERROR "Invalid argument: ${ARG}\nDestination path '${HEADER_DST}' is invalid (have you forgotten suffix '/'?)")
             endif ()
 
-            foreach (extension "*.h" "*.hpp" "*.hxx")
+            string (REGEX MATCHALL "[^,]+" EXTENSIONS "${EXT}")
+            foreach (extension IN LISTS EXTENSIONS)
                 file (GLOB CHILDREN RELATIVE ${HEADER_SRC} ${HEADER_SRC}/${extension})
 
                 foreach (child ${CHILDREN})
-                    list (APPEND ARGS_RECURSION "${HEADER_SRC}/${child}:${HEADER_DST}${child}")
+                    if (NOT IS_DIRECTORY "${HEADER_SRC}/${child}")
+                        eval ("${MACROS} (\"${HEADER_SRC}/${child}\" \"${PREFIX_LOC}${HEADER_DST}\" \"${PREFIX_LOC}${HEADER_DST}${child}\")")
+                    endif ()
                 endforeach ()
             endforeach ()
-
-            if (ARGS_RECURSION)
-                __install_header_files_with_prefix (${NAME} "${PREFIX_ORIG}" LOCAL_OUTPUT_FILES ${ARGS_RECURSION})
-            endif ()
         else ()
-            if (${HEADER_DST} MATCHES "^.+[\\/]$")
-                set (HEADER_DST_DIR "${PREFIX}${HEADER_DST}")
+            if (${HEADER_DST} MATCHES "[\\/]$")
+                set (HEADER_DST_DIR "${PREFIX_LOC}${HEADER_DST}")
                 string (REGEX REPLACE "^.*[\\/]([^\\/]+)$" "${HEADER_DST}\\1" HEADER_DST "${HEADER_SRC}")
             endif ()
 
-            add_custom_command (OUTPUT ${GLOBAL_HEADERS}/${PREFIX}${HEADER_DST}
-                                COMMAND cmake -E copy ${HEADER_SRC} ${GLOBAL_HEADERS}/${PREFIX}${HEADER_DST}
-                                DEPENDS ${HEADER_SRC})
-
-            list (APPEND GENERATED_FILES "${GLOBAL_HEADERS}/${PREFIX}${HEADER_DST}")
-
-            if (CMAKE_CROSSCOMPILING)
-                install (FILES ${GLOBAL_HEADERS}/${PREFIX}${HEADER_DST}
-                         DESTINATION ${TARGET}/include/${HEADER_DST_DIR})
-            else ()
-                install (FILES ${GLOBAL_HEADERS}/${PREFIX}${HEADER_DST}
-                         DESTINATION include/${HEADER_DST_DIR})
-            endif ()
+            eval ("${MACROS} (\"${HEADER_SRC}\" \"${HEADER_DST_DIR}\" \"${PREFIX_LOC}${HEADER_DST}\")")
         endif ()
-
-        set (${OUTPUT_FILES}
-             ${${OUTPUT_FILES}}
-             ${LOCAL_OUTPUT_FILES}
-             ${GENERATED_FILES}
-             PARENT_SCOPE)
     endforeach ()
-endfunction ()
+endmacro ()
+
+
+macro (__install_header_files_with_prefix_macro A1 A2 A3)
+    add_custom_command (OUTPUT ${GLOBAL_HEADERS}/${A3}
+                        COMMAND ${CMAKE_COMMAND} -E copy ${A1} ${GLOBAL_HEADERS}/${A3}
+                        DEPENDS ${A1})
+
+    list (APPEND GENERATED_FILES "${GLOBAL_HEADERS}/${A3}")
+
+    if (CMAKE_CROSSCOMPILING)
+        install (FILES ${GLOBAL_HEADERS}/${A3}
+                 DESTINATION ${TARGET}/include/${A2}
+                 COMPONENT headers)
+    else ()
+        install (FILES ${GLOBAL_HEADERS}/${A3}
+                 DESTINATION include/${A2}
+                 COMPONENT headers)
+    endif ()
+endmacro ()
 
 
 function (install_header_files_with_prefix NAME PREFIX ...)
     if (NOT TARGET ${NAME}_headers)
         __setup_global_headers ()
+        __get_compiler_target ()
+        set (GENERATED_FILES)
 
         set (ARGS ${ARGV})
         if ("${PREFIX}" STREQUAL "")
@@ -132,7 +128,7 @@ function (install_header_files_with_prefix NAME PREFIX ...)
             list (REMOVE_AT ARGS 0 1)
         endif ()
 
-        __install_header_files_with_prefix (${NAME} "${PREFIX}" GENERATED_FILES ${ARGS})
+        __process_files_to_install (__install_header_files_with_prefix_macro "*.h,*.hpp,*.hxx" "${PREFIX}" ${ARGS})
 
         add_custom_target (${NAME}_headers DEPENDS ${GENERATED_FILES})
         add_dependencies (${NAME} ${NAME}_headers)
@@ -146,42 +142,96 @@ function (install_header_files NAME ...)
     if (NOT TARGET ${NAME}_headers)
         set (ARGS ${ARGV})
         list (REMOVE_AT ARGS 0)
-        install_header_files_with_prefix (${NAME} ${PROJECT_NAME} ${ARGS})
+        string (TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
+        install_header_files_with_prefix (${NAME} ${PROJECT_NAME_LOWER} ${ARGS})
     else ()
         message (FATAL_ERROR "Function 'install_header_files' can be called only once in each directory!")
     endif ()
 endfunction ()
 
 
+macro (__install_build_time_header_files A1 A2 A3)
+    add_custom_command (OUTPUT ${GLOBAL_HEADERS}/${A3}
+                        COMMAND ${CMAKE_COMMAND} -E copy ${A1} ${GLOBAL_HEADERS}/${A3}
+                        DEPENDS ${A1})
+
+    list (APPEND GENERATED_FILES "${GLOBAL_HEADERS}/${A3}")
+endmacro ()
+
+function (install_build_time_header_files NAME ...)
+    if (NOT TARGET ${NAME}_build_time_headers)
+        __setup_global_headers ()
+
+        set (GENERATED_FILES)
+        set (ARGS ${ARGV})
+        list (REMOVE_AT ARGS 0)
+
+        __process_files_to_install (__install_build_time_header_files "*.h,*.hpp,*.hxx" "" ${ARGS})
+
+        add_custom_target (${NAME}_build_time_headers DEPENDS ${GENERATED_FILES})
+        add_dependencies (${NAME} ${NAME}_build_time_headers)
+    else ()
+        message (FATAL_ERROR "Function 'install_build_time_header_files' can be called only once in each directory!")
+    endif ()
+endfunction ()
+
+
+macro (__install_cmake_files_macro A1 A2 A3)
+    install (FILES ${A1} DESTINATION share/cmake/Modules/${A2} COMPONENT cmake_scripts)
+endmacro ()
+
 function (install_cmake_files ...)
-    foreach (ARG IN LISTS ARGV)
-        if (${ARG} MATCHES "^[\\/].+:[^:]+$")
-            string (REGEX REPLACE "^(.+):[^:]+$" "\\1" HEADER_SRC "${ARG}")
-        elseif (${ARG} MATCHES "^.+:[^:]+$")
-            string (REGEX REPLACE "^(.+):[^:]+$" "\\1" HEADER_SRC "${ARG}")
-            set (HEADER_SRC "${CMAKE_CURRENT_SOURCE_DIR}/${HEADER_SRC}")
-        else ()
-            message (FATAL_ERROR "Invalid argument: ${ARG}\nShould be '<path to CMake file>:<destination file name>'")
-        endif ()
+    __process_files_to_install (__install_cmake_files_macro "*.cmake" "" ${ARGV})
+endfunction ()
 
-        string (REGEX REPLACE "^.+:([^:]+)$"     "\\1" HEADER_DST     "${ARG}")
-        string (REGEX REPLACE "^((.+[\\/])*).+$" "\\1" HEADER_DST_DIR "${HEADER_DST}")
 
-        install (FILES ${HEADER_SRC} DESTINATION share/cmake/Modules/${HEADER_DST_DIR})
-    endforeach ()
+macro (__install_files_macro A1 A2 A3)
+    install (FILES ${A1} DESTINATION ${A2})
+endmacro ()
+
+function (install_files DESTINATION ...)
+    set (ARGS ${ARGV})
+    if (NOT "${DESTINATION}" STREQUAL "")
+        list (REMOVE_AT ARGS 0)
+    endif ()
+    __process_files_to_install (__install_files_macro "*" "${DESTINATION}" ${ARGS})
+endfunction ()
+
+
+macro (__install_programs_macro A1 A2 A3)
+    install (PROGRAMS ${A1} DESTINATION ${A2})
+endmacro ()
+
+function (install_programs DESTINATION ...)
+    set (ARGS ${ARGV})
+    if (NOT "${DESTINATION}" STREQUAL "")
+        list (REMOVE_AT ARGS 0)
+    endif ()
+    __process_files_to_install (__install_programs_macro "*" "${DESTINATION}" ${ARGS})
 endfunction ()
 
 
 function (install_target NAME)
+    get_target_property (TARGET_TYPE ${NAME} TYPE)
+
+    if ("${TARGET_TYPE}" STREQUAL "EXECUTABLE")
+        set (INSTALL_COMPONENT runtime)
+    else ()
+        set (INSTALL_COMPONENT libraries)
+    endif ()
+
     if (CMAKE_CROSSCOMPILING)
+        __get_compiler_target ()
         install (TARGETS ${NAME}
-                 RUNTIME DESTINATION bin
+                 RUNTIME DESTINATION ${TARGET}/bin
                  LIBRARY DESTINATION ${TARGET}/lib
-                 ARCHIVE DESTINATION ${TARGET}/lib)
+                 ARCHIVE DESTINATION ${TARGET}/lib
+                 COMPONENT ${INSTALL_COMPONENT})
     else ()
         install (TARGETS ${NAME}
                  RUNTIME DESTINATION bin
                  LIBRARY DESTINATION lib
-                 ARCHIVE DESTINATION lib)
+                 ARCHIVE DESTINATION lib
+                 COMPONENT ${INSTALL_COMPONENT})
     endif ()
 endfunction ()

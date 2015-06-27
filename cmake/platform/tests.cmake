@@ -50,7 +50,7 @@ if (NOT CMAKE_CROSSCOMPILING)
 
     exclude_files (".*/main.cpp$" ${SOURCES})
     add_executable (${NAME}_tests ${CMAKE_CURRENT_BINARY_DIR}/tests/tests.cpp ${${SOURCES}})
-    set_target_cxx_flags (${NAME}_tests YES YES YES NO YES NO YES NO)
+    set_target_compiler_flags_default (${NAME}_tests "COVERAGE:YES")
 
     get_target_property (TARGET_TYPE ${NAME} TYPE)
     if (TARGET_TYPE MATCHES ".+_LIBRARY$")
