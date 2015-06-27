@@ -150,10 +150,10 @@
 #define PLATFORM_CPU_X86 1
 
 #if PLATFORM_COMPILER(GCC)
-#if defined(__BIG_ENDIAN__) || defined(__BIG_ENDIAN) \
+#if defined(__BIG_ENDIAN__) \
 	|| (defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__))
 #define PLATFORM_CPU_BIG_ENDIAN 1
-#elif defined(__LITTLE_ENDIAN__) || defined(__LITTLE_ENDIAN) \
+#elif defined(__LITTLE_ENDIAN__) \
 	|| (defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__))
 #define PLATFORM_CPU_LITTLE_ENDIAN 1
 #else
@@ -171,10 +171,10 @@
 #define PLATFORM_CPU_X86_64 1
 
 #if PLATFORM_COMPILER(GCC)
-#if defined(__BIG_ENDIAN__) || defined(__BIG_ENDIAN) \
+#if defined(__BIG_ENDIAN__) \
 	|| (defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__))
 #define PLATFORM_CPU_BIG_ENDIAN 1
-#elif defined(__LITTLE_ENDIAN__) || defined(__LITTLE_ENDIAN) \
+#elif defined(__LITTLE_ENDIAN__) \
 	|| (defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__))
 #define PLATFORM_CPU_LITTLE_ENDIAN 1
 #else
