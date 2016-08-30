@@ -32,6 +32,5 @@ install_cmake_files ("cmake/${PROJECT_NAME}/collect_files.cmake:${PROJECT_NAME}/
                      "cmake/${PROJECT_NAME}/project_build_type.cmake:${PROJECT_NAME}/project_build_type.cmake"
                      "cmake/${PROJECT_NAME}/stubs.cmake:${PROJECT_NAME}/stubs.cmake"
                      "cmake/${PROJECT_NAME}/tests.cmake:${PROJECT_NAME}/tests.cmake"
-                     "cmake/${PROJECT_NAME}/version.cmake:${PROJECT_NAME}/version.cmake"
                      "cmake/FindPlatform.cmake:FindPlatform.cmake"
                      "cmake/platform.cmake:platform.cmake")
