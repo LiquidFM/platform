@@ -1,16 +1,13 @@
 project (platform)
 
-# Tools
-include (platform/stubs)
-
 # Project header
 project_static_library_header_default ()
 
 # Target
-add_library_stub (platform)
+add_custom_target (platform)
 
 # Documentation
-add_documentation ("platform" 1.2.0 "Platform definition header-only library")
+add_documentation (platform 1.2.0 "Platform definition header-only library")
 
 # Install rules
 install_header_files (platform "src/compiler.h:compiler.h"
