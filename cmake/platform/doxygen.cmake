@@ -33,7 +33,7 @@ function (_add_documentation_ex NAME VERSION_MAJOR VERSION_MINOR VERSION_RELEASE
     file (MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIRECTORY})
     find_file (DOXYGEN_CONF_IN "doxygen.conf.in"
                PATHS
-                   ${CMAKE_SOURCE_DIR}/platform/cmake/platform
+                   ${CMAKE_INSTALL_PREFIX}/share/cmake/Modules/platform
                    ${CMAKE_ROOT}/Modules/platform
                NO_DEFAULT_PATH
                NO_CMAKE_ENVIRONMENT_PATH
